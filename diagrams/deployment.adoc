@@ -1,0 +1,63 @@
+= Deployment diagram
+
+
+== Beep description
+
+Beep is a discord like application. It as a Node.js backend and a React frontend. All of the code is containerized using Docker. 
+The images are pushed inside a Docker registry.
+
+Then the application is deployed on a Kubernetes cluster. Each time the code is updated, a new image is built and pushed to the registry. In the same time an helm chart is updated with the new image tag. And an ArgoCD instance monitor this repo and redeploy the application when the tag changes. 
+
+Beep uses:
+- Redis
+- PostgreSQL
+- Minio
+
+Those are deployed on the same Kubernetes cluster. This is deployed using IAC tools (Terraform). It deploys the services with open source helm charts. Then we use Helm terraform provider to deploy the helm charts with the right values.
+
+The secrets are stored in gitlab and are encrypted with sealed secrets. The secrets are deploy in the same time that the services.
+
+The frontend is accessible on internet as well as the backend. 
+The backend consumes the Redis and PostgreSQL services. The frontend consumes the backend API.
+
+[plantuml, deployment-diagram, svg]
+----
+@startuml
+!define RECTANGLE class
+
+node "User" as user
+
+node "Internet" {
+    node "Frontend (React)" as frontend
+    node "Backend (Node.js)" as backend
+}
+
+cloud "Kubernetes Cluster" {
+    node "Redis"
+    node "PostgreSQL"
+    node "Minio"
+    node "ArgoCD"
+}
+
+database "Docker Registry" as registry
+database "GitLab (Secrets)" as gitlab
+
+user --> frontend : Uses
+frontend --> backend : API Calls
+backend --> Redis : Caches
+backend --> PostgreSQL : Reads/Writes
+backend --> Minio : Stores Files
+
+backend --> registry : Pulls Images
+frontend --> registry : Pulls Images
+
+ArgoCD --> registry : Monitors Images
+ArgoCD --> backend : Deploys
+ArgoCD --> frontend : Deploys
+
+ArgoCD --> gitlab : Pulls Secrets
+backend --> gitlab : Reads Secrets
+frontend --> gitlab : Reads Secrets
+
+@enduml
+----
