@@ -7,3 +7,9 @@ Tasks:
 - [ ] Create a project description and deployment diagram (deployment diagram)
 - [ ] Create a threat modeling.
 
+
+## Generate the dock
+
+```sh
+asciidoctor -r asciidoctor-pdf -r asciidoctor-diagram -b pdf diagrams/deployment.adoc
+```
