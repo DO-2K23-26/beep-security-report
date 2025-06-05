@@ -1,2 +1,26 @@
 == Beep security report
 
+=== What is Beep?
+
+Beep is a discord-like web application that allows users to communicate in real-time through text, voice, and video.
+
+==== Project deployment diagram
+
+The following diagram illustrates the deployment architecture of Beep, including its components and their interactions:
+
+![Beep Deployment Diagram](./images/beep-deployment-diagram.png)
+
+=== Threats & security risk assessment
+
+Currently, Beep does not have security risk assessment mechanisms in place. To address this issue, we have conducted a security risk assessment of Beep's API, web UI, and infrastructure defined as code, as well as automated such processes in CI.  
+Conducting this has allowed us to identify potential threat vectors and Common Vulnerabilities and Exposures (CVEs). The assessment was performed using various tools, including IriusRisk for threat modeling and risk assessment, Snyk for static code analysis, and trivy for container image scanning. Dependencies were also analyzed for known vulnerabilities.
+
+
+==== Security risk assessment with IriusRisk
+
+
+==== Security risk assessment with Snyk
+
+
+==== Security risk assessment with Trivy
+
