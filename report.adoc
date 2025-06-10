@@ -59,7 +59,7 @@ Conducting this has allowed us to identify potential threat vectors and Common V
 
 === Summary of findings
 
-==== Security risk assessment with IriusRisk
+==== Threat modeling and security risk assessment with IriusRisk
 
 We used IriusRisk to build a model of our infrastructure. IriusRisk then generated a threat model based on the given architecture of the Beep platform, including potential threats, vulnerabilities, and mitigations for each component of the system.
 
@@ -85,8 +85,6 @@ Our assessment revealed several critical security threats to the Beep platform:
 
 *Data Security Concerns*: Insecure file permissions on PostgreSQL databases and inadequate protection of secrets management increase risk of data exposure.
 
-//TODO: add stuff here
-
 ===== Potential Mitigations
 
 *Short-term Actions*: 
@@ -100,11 +98,23 @@ To build a security-focused culture, we suggest developing comprehensive securit
 
 The implementation of these mitigations, prioritizing the highest-risk items first, will substantially improve Beep's security posture and reduce vulnerability to attacks.
 
-==== SAST on codebase with Snyk and SCA on container images with Trivy
+You can find more details about the threat model in the `countermeasures/` directory.
 
-We update the Beep GitLab CI test stages to include SAST and SCA scans using Snyk and Trivy, respectively. This allows us to automatically scan the codebase and container images for vulnerabilities during the build process.
+==== SAST on codebase with Snyk
 
-//TODO: add stuff here
+We have updated Beep's GitLab CI test stages to include SAST scans using Snyk. This allows us to automatically scan the codebase for vulnerabilities.
+
+//TODO: Add content here
+
+You can find more details about the threat model in the `countermeasures/` directory.
+
+==== SCA on container images with Trivy
+
+We have updated Beep's GitLab CI test stages to include SCA scans using Trivy. This allows us to automatically scan container images for vulnerabilities during the build process.
+
+//TODO: Add content here
+
+You can find more details about the threat model in the `countermeasures/` directory.
 
 ---
 
