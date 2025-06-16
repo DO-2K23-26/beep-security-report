@@ -193,9 +193,66 @@ You can find more details about the threat model in the `sast/` directory.
 
 We have updated Beep's GitLab CI test stages to include SCA scans using Trivy. This allows us to automatically scan container images for vulnerabilities during the build process.
 
-//TODO: Add content here
+Here is the updated GitLab CI configuration for SCA with Trivy:
 
-You can find more details about the threat model in the `countermeasures/` directory.
+```yaml
+container-scan:
+  stage: test
+  image:
+    name: docker.io/aquasec/trivy:latest
+    entrypoint: [""]
+  variables:
+    # No need for pre-pulling the image as it comes from the build stage
+    TRIVY_NO_PROGRESS: "true"
+    TRIVY_CACHE_DIR: .trivycache/
+    TRIVY_SEVERITY: HIGH,CRITICAL
+  tags:
+    - beep-runner
+  script:
+    - trivy image --format json --output trivy-image-report.json $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+  artifacts:
+    paths:
+      - trivy-image-report.json
+    when: always
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: never
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+```
+
+Here is a table summarizing the 10 most important vulnerabilities that were found in the container image:
+
+[cols="1,2,1,1,2,2", options="header"]
+|===
+|CVE ID |Title |Severity |CVSS Score |Package (Version) |Description
+
+|CVE-2024-6119 |Possible denial of service in X.509 name checks |HIGH |7.5 |libssl3, libcrypto3 (3.1.4-r2) |Applications performing certificate name checks may attempt to read an invalid memory address resulting in abnormal termination of the application process.
+
+|CVE-2023-6129 |POLY1305 MAC implementation corrupts vector registers on PowerPC |MEDIUM |6.5 |libssl3, libcrypto3 (3.1.4-r2) |The POLY1305 MAC implementation contains a bug that might corrupt the internal state of applications running on PowerPC CPU based platforms.
+
+|CVE-2023-6237 |Excessive time spent checking invalid RSA public keys |MEDIUM |5.9 |libssl3, libcrypto3 (3.1.4-r2) |Applications that use EVP_PKEY_public_check() may experience long delays with untrusted keys, leading to Denial of Service.
+
+|CVE-2024-0727 |Denial of service via null dereference |MEDIUM |5.5 |libssl3, libcrypto3 (3.1.4-r2) |Processing maliciously formatted PKCS12 files may lead to crashes via null pointer dereference.
+
+|CVE-2024-4741 |Use After Free with SSL_free_buffers |MEDIUM |5.6 |libssl3, libcrypto3 (3.1.4-r2) |Calling SSL_free_buffers may cause memory to be accessed after being freed, leading to crashes or arbitrary code execution.
+
+|CVE-2024-5535 |SSL_select_next_proto buffer overread |MEDIUM |5.9 |libssl3, libcrypto3 (3.1.4-r2) |Buffer overread could result in up to 255 bytes of private memory data being sent to peers.
+
+|CVE-2023-42363 |Use-after-free in awk |MEDIUM |5.5 |busybox, busybox-binsh (1.36.1-r15) |A use-after-free vulnerability in BusyBox's xasprintf function could lead to denial of service.
+
+|CVE-2023-42364 |Use-after-free |MEDIUM |5.5 |busybox, busybox-binsh (1.36.1-r15) |A use-after-free vulnerability in BusyBox allows attackers to cause denial of service via crafted awk patterns.
+
+|CVE-2023-42365 |Use-after-free |MEDIUM |5.5 |busybox, busybox-binsh (1.36.1-r15) |A use-after-free vulnerability in BusyBox via crafted awk patterns in the copyvar function.
+
+|CVE-2023-42366 |Heap-buffer-overflow |MEDIUM |5.5 |busybox, busybox-binsh (1.36.1-r15) |A heap-buffer-overflow vulnerability in BusyBox's next_token function at awk.c:1159.
+|===
+
+The container scan results reveal several concerning vulnerabilities in the base Alpine Linux packages used in the Beep API image. Most notable is the high-severity CVE-2024-6119 in OpenSSL libraries that could allow denial of service attacks. Additionally, multiple medium-severity vulnerabilities were found in both OpenSSL (libssl3/libcrypto3) and BusyBox components, with issues ranging from use-after-free conditions to buffer overflows.
+
+These findings highlight the importance of regularly updating base images and dependencies, as many of these vulnerabilities have fixed versions available. We recommend implementing a continuous vulnerability scanning process in the CI/CD pipeline and establishing a security patching policy to address these issues promptly.
+
+You can find more details about the container scan results in the `trivy/` directory.
 
 ---
 
