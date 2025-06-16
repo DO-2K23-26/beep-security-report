@@ -104,9 +104,90 @@ You can find more details about the threat model in the `countermeasures/` direc
 
 We have updated Beep's GitLab CI test stages to include SAST scans using Snyk. This allows us to automatically scan the codebase for vulnerabilities.
 
-//TODO: Add content here
+here is the updated GitLab CI configuration for SAST with Snyk:
 
-You can find more details about the threat model in the `countermeasures/` directory.
+```yaml
+code-test:
+  stage: test
+  image: snyk/snyk:docker
+  variables:
+    SNYK_TOKEN: $SNYK_TOKEN_HUGO
+  tags:
+    - beep-runner
+  script:
+    - cd $CI_PROJECT_DIR
+    - ls
+    - echo "Running Snyk tests..."
+    - echo SNYK_TOKEN
+    - snyk code test --json-file-output=./code-test.json --severity-threshold=medium
+  artifacts:
+    paths:
+      - code-test.json
+    when: always
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: never
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+
+deps-scan:
+  stage: test
+  image: snyk/snyk:docker
+  variables:
+    SNYK_TOKEN: $SNYK_TOKEN_HUGO
+  tags:
+    - beep-runner
+  script:
+    - cd $CI_PROJECT_DIR
+    - echo "Running Snyk tests..."
+    - snyk test --json-file-output=./deps-scan.json
+  artifacts:
+    paths:
+      - deps-scan.json
+    when: always
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: never
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+```
+
+Here is a table summarizing the 10 most important vulnerabilities that were found in the codebase:
+
+[cols="1,2,1,1,1,2", options="header"]
+|===
+|# |Issue Type |Severity |Score |File |Description
+
+|1 |Hardcoded Secret (JWT sign) |error |807 |apps/users/services/user_service.ts:101 |Hardcoded cipher key used in `jsonwebtoken.sign`.
+|2 |Hardcoded Secret (JWT verify) |error |807 |apps/users/services/user_service.ts:113 |Hardcoded cipher key used in `jsonwebtoken.verify`.
+|3 |ServerLeak |warning |594 |apps/authentication/exceptions/authentication_exception_handler.ts:6 |Error object leaked via `send()`.
+|4 |ServerLeak |warning |594 |apps/authentication/exceptions/current_password_mismatch_exception.ts:6 |Error object leaked via `send()`.
+|5 |ServerLeak |warning |594 |apps/channels/exceptions/channel_cant_be_children_exception.ts:6 |Error object leaked via `send()`.
+|6 |ServerLeak |warning |594 |apps/channels/exceptions/channel_not_found_exception.ts:6 |Error object leaked via `send()`.
+|7 |ServerLeak |warning |594 |apps/channels/exceptions/wrong_channel_type.ts:6 |Error object leaked via `send()`.
+|8 |ServerLeak |warning |594 |apps/invitations/exceptions/unusable_invitation_exception.ts:6 |Error object leaked via `send()`.
+|9 |ServerLeak |warning |594 |apps/invitations/exceptions/wrong_invitation_format_exception.ts:6 |Error object leaked via `send()`.
+|10 |ServerLeak |warning |594 |apps/members/exceptions/member_not_in_server_exception.ts:6 |Error object leaked via `send()`.
+|===
+
+And the below table exposes the vulnerability that was found in the dependencies:
+
+[cols="1,3,1,1,3,2", options="header"]
+|===
+| ID | Title | Severity | CVSS Score | Package (Version) | Exploit Status
+
+| SNYK-JS-LODASHSET-1320032
+| Prototype Pollution
+| High
+| 7.3
+| lodash.set (4.3.2)
+| Proof of Concept
+|===
+
+NOTE: This vulnerability affects the `lodash.set` package and does not have a fixed version. It allows attackers to exploit prototype pollution, potentially leading to denial of service, remote code execution, or unauthorized privilege escalation.
+
+
+You can find more details about the threat model in the `sast/` directory.
 
 ==== SCA on container images with Trivy
 
