@@ -248,10 +248,6 @@ Here is a table summarizing the 10 most important vulnerabilities that were foun
 |CVE-2023-42366 |Heap-buffer-overflow |MEDIUM |5.5 |busybox, busybox-binsh (1.36.1-r15) |A heap-buffer-overflow vulnerability in BusyBox's next_token function at awk.c:1159.
 |===
 
-The container scan results reveal several concerning vulnerabilities in the base Alpine Linux packages used in the Beep API image. Most notable is the high-severity CVE-2024-6119 in OpenSSL libraries that could allow denial of service attacks. Additionally, multiple medium-severity vulnerabilities were found in both OpenSSL (libssl3/libcrypto3) and BusyBox components, with issues ranging from use-after-free conditions to buffer overflows.
-
-These findings highlight the importance of regularly updating base images and dependencies, as many of these vulnerabilities have fixed versions available. We recommend implementing a continuous vulnerability scanning process in the CI/CD pipeline and establishing a security patching policy to address these issues promptly.
-
 You can find more details about the container scan results in the `trivy/` directory.
 
 ---
